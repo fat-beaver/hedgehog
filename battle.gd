@@ -5,12 +5,7 @@ onready var camera = $HexGrid/Camera2D
 func _ready():
 	pass
 
-func _process(_delta):
-	if Input.is_key_pressed(KEY_LEFT):
-		camera.move_local_x(-20)
-	elif Input.is_key_pressed(KEY_RIGHT):
-		camera.move_local_x(20)
-	elif Input.is_key_pressed(KEY_UP):
-		camera.move_local_y(-20)
-	elif Input.is_key_pressed(KEY_DOWN):
-		camera.move_local_y(20)
+func _process(delta):
+	var movement_vector: Vector2 = Input.get_vector("move_left", "move_right", "move_down", "move_up")
+	camera.move_local_x(movement_vector.x * 1600 * delta)
+	camera.move_local_y(-movement_vector.y * 1600 * delta)
