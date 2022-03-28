@@ -20,10 +20,8 @@ cell_custom_transform = Transform2D( 0, 0, 0, 0, 0, 0 )
 cell_half_offset = 0
 cell_y_sort = true
 format = 1
-tile_data = PoolIntArray( 4, 0, 0 )
 
 [node name="Camera2D" type="Camera2D" parent="HexGrid"]
-position = Vector2( 601, 612 )
 current = true
 
 [node name="Ferret #1" type="Node2D" parent="."]

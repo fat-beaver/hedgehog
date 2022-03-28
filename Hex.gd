@@ -1,4 +1,4 @@
-extends Node2D
+extends Resource
 class_name Hex
 
 var coords
