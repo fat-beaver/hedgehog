@@ -5,12 +5,9 @@ class_name HexGrid
 onready var _tile_map = $TileMap
 onready var _camera = $Camera2D
 
-var _Hex = preload("Hex.gd")
 var map_size = 6
 var _hexes = []
 var _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
-
-
 
 func _ready():
 	#generate the map
@@ -21,14 +18,14 @@ func _ready():
 
 func _generate_map():
 	#create all of the hexes to fill a sample map
-	var tempCentreHex = _Hex.new(Vector2(0,0), 0)
+	var tempCentreHex = Hex.new(Vector2(0,0), 0)
 	for q in range(-map_size, map_size + 1):
 		for r in range(-map_size, map_size + 1):
 			for s in range(-map_size, map_size + 1):
 				#check if this particular cell could actually exist (all cube-coordinate cells have
 				# the constraint q + r + s = 0)
 				if q + r + s == 0:
-					var hex = _Hex.new(Vector2(q,r), 0)
+					var hex = Hex.new(Vector2(q,r), 0)
 					#set the terrain of the hex to its distance from the centre, as a demonstration
 					hex.set_terrain_type(find_hex_distance(tempCentreHex, hex) / 2%4)
 					_hexes.append(hex)
