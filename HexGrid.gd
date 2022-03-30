@@ -20,8 +20,8 @@ func _ready():
 	#generate the map
 	_generate_map()
 	_draw_map()
-	#position the camera
-	_camera.set_global_position(Vector2(0,0))
+	#centre the camera on hex (0,0)
+	_camera.set_global_position(hex_to_point(get_hex_at_coords(Vector2(0, 0))))
 	
 	var path_start = get_hex_at_coords(Vector2(-4, 0))
 	var path_end = get_hex_at_coords(Vector2(2, -4))
