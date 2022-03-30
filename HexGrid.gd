@@ -8,6 +8,11 @@ onready var _camera = $Camera2D
 const map_size = 6
 const _mouse_offset_x = -98
 const _mouse_offset_y = -62
+
+#constants for hex size, cannot get these from tilemap because the size used for scaling is not the actual size
+const hex_width = 192
+const hex_height = 128
+
 var _hexes = []
 const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
 
@@ -147,11 +152,13 @@ func hex_coords_of_point(point: Vector2) -> Vector2:
 	coords.y = 0 * point.x + 1.0 / 92.0 * point.y
 	return round_hex_coords(coords)
 
-func point_to_hex(hex: Hex) -> Vector2:
+func hex_to_point(hex: Hex) -> Vector2:
+	if hex == null:
+		return Vector2()
 	var coords = hex.get_coords()
 	var point: Vector2 = Vector2()
-	point.x = 192 * coords.x + 96 * coords.y
-	point.y = 0 * coords.x + 92 * coords.y
+	point.x = 192 * coords.x + 96 * coords.y + hex_width / 2.0
+	point.y = 0 * coords.x + 92 * coords.y  + hex_height / 2.0
 	return point
 
 func round_hex_coords(coords: Vector2) -> Vector2:
