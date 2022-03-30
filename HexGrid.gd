@@ -5,9 +5,11 @@ class_name HexGrid
 onready var _tile_map = $TileMap
 onready var _camera = $Camera2D
 
-var map_size = 6
+const map_size = 6
+const _mouse_offset_x = -98
+const _mouse_offset_y = -62
 var _hexes = []
-var _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
+const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
 
 func _ready():
 	#generate the map
@@ -21,8 +23,7 @@ func _ready():
 	_draw_map()
 	var path = find_path_between(path_start, path_end)
 	for hex in path:
-		hex.set_terrain_type(3)
-	_draw_map()
+		set_hex_terrain(hex, 3)
 
 func _generate_map():
 	#create all of the hexes to fill a sample map
@@ -35,7 +36,7 @@ func _generate_map():
 				if q + r + s == 0:
 					var hex = Hex.new(Vector2(q,r), 0)
 					#set the terrain of the hex to its distance from the centre, as a demonstration
-					hex.set_terrain_type(find_hex_distance(tempCentreHex, hex) / 2%4)
+					hex.set_terrain_type(find_hex_distance(tempCentreHex, hex) / 2 %4)
 					_hexes.append(hex)
 
 func _draw_map():
@@ -136,3 +137,43 @@ func find_path_between(start: Hex, goal: Hex) -> Array:
 		path.append(start)
 		path.invert()
 	return path
+
+func hex_coords_of_point(point: Vector2) -> Vector2:
+	var coords: Vector2 = Vector2()
+	#adjust the points a bit to make them line up with the tilemap placement
+	point.x += _mouse_offset_x
+	point.y += _mouse_offset_y
+	coords.x = 1.0 / 192.0 * point.x - (1.0 / 184.0) * point.y
+	coords.y = 0 * point.x + 1.0 / 92.0 * point.y
+	return round_hex_coords(coords)
+
+func point_to_hex(hex: Hex) -> Vector2:
+	var coords = hex.get_coords()
+	var point: Vector2 = Vector2()
+	point.x = 192 * coords.x + 96 * coords.y
+	point.y = 0 * coords.x + 92 * coords.y
+	return point
+
+func round_hex_coords(coords: Vector2) -> Vector2:
+	#round each coord and extract s
+	var q = round(coords.x)
+	var r = round(coords.y)
+	var s = round(- coords.x - coords.y)
+	#determine which coord had the greatest change due to rounding
+	var q_difference = abs(q - coords.x)
+	var r_difference = abs(r - coords.y)
+	var s_difference = abs(s - (- coords.x - coords.y))
+	
+	if q_difference > r_difference and q_difference > s_difference:
+		q = - r - s
+	elif r_difference > s_difference:
+		r = - q - s
+	else:
+		s = - q - r
+	return Vector2(q, r)
+
+func set_hex_terrain(hex: Hex, terrain_type: int):
+	if hex == null:
+		return
+	hex.set_terrain_type(terrain_type)
+	_tile_map.set_cell(hex.get_offset_coords().x, hex.get_offset_coords().y, terrain_type)

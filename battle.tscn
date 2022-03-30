@@ -15,10 +15,11 @@ script = ExtResource( 5 )
 [node name="TileMap" type="TileMap" parent="HexGrid"]
 position = Vector2( 1, 0 )
 tile_set = ExtResource( 1 )
-cell_size = Vector2( 192, 93 )
+cell_size = Vector2( 192, 94 )
 cell_custom_transform = Transform2D( 0, 0, 0, 0, 0, 0 )
 cell_half_offset = 0
 cell_y_sort = true
+show_collision = true
 format = 1
 
 [node name="Camera2D" type="Camera2D" parent="HexGrid"]
