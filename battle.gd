@@ -10,12 +10,13 @@ const max_zoom = 5
 const camera_movement_mult = 1200
 #ferret constants
 const ferret_sprite_location = "art/ferret/png/test_1.png"
-const ferret_hex_coords = Vector2(-4, 0)
+const ferret_coords = Vector2(-4, 0)
 #hedgehog constants
 const hedgehog_sprite_location = "art/hedgehog/png/test_1.png"
-const hedgehog_hex_coords = Vector2(4, 0)
-
-onready var ferret_hex = grid.get_hex_at_coords(ferret_hex_coords)
+const hedgehog_coords = Vector2(4, 0)
+#store the hex the ferret is in so pathing can start from there
+var ferret_hex
+var hedgehog_hex
 
 var path = HexPath.new(null)
 var camera = Camera2D.new()
@@ -24,7 +25,9 @@ var ferret = Node2D.new()
 var hedgehog = Node2D.new()
 
 func _ready():
-	#add the path and the camera as children
+	ferret_hex = grid.get_hex_at_coords(ferret_coords)
+	hedgehog_hex = grid.get_hex_at_coords(hedgehog_coords)
+	#add all of the children
 	add_child(grid)
 	add_child(path)
 	_set_up_camera()
@@ -40,15 +43,18 @@ func _set_up_camera():
 
 func _set_up_critters():
 	add_child(ferret)
-	ferret.position = grid.get_hex_at_coords(ferret_hex_coords).get_centre_point()
+	ferret.position = ferret_hex.get_centre_point()
 	var ferret_sprite = Sprite.new()
 	ferret_sprite.texture = load(ferret_sprite_location)
 	ferret.add_child(ferret_sprite)
+	#make sure that the ferret is not in water
+	grid.set_hex_terrain(ferret_hex, 0)
 	add_child(hedgehog)
-	hedgehog.position = grid.get_hex_at_coords(hedgehog_hex_coords).get_centre_point()
+	hedgehog.position = hedgehog_hex.get_centre_point()
 	var hedgehog_sprite = Sprite.new()
 	hedgehog_sprite.texture = load(hedgehog_sprite_location)
 	hedgehog.add_child(hedgehog_sprite)
+	grid.set_hex_terrain(hedgehog_hex, 0)
 
 func _process(delta):
 	var movement_vector: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
