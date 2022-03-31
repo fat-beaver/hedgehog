@@ -9,11 +9,17 @@ onready var _path = $HexPath
 const map_size = 40
 const _mouse_offset_x = -98
 const _mouse_offset_y = -62
+#a multiplier for the pathing heuristic equal to the movement cost of a "standard" tile so that the
+# heuristic is still a significant part of the priority when added to the cost, significantly improving
+# performance (especially in terrain with few obstacles)
 const _pathing_heuristic_multiplier = 6
 
 var _current_path = []
 
-var _hexes = []
+#the hexes are stored in a dictionary for most uses as well as an array for when iteration is required
+var _hexes: Dictionary = {}
+var _hexes_array: Array = []
+
 const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
 
 func _ready():
@@ -24,7 +30,6 @@ func _ready():
 
 func _generate_map():
 	#create all of the hexes to fill a sample map
-	var tempCentreHex = Hex.new(Vector2(0,0), 0)
 	for q in range(-map_size, map_size + 1):
 		for r in range(-map_size, map_size + 1):
 			for s in range(-map_size, map_size + 1):
@@ -43,35 +48,39 @@ func _generate_map():
 					else:
 						hex.set_terrain_type(1)
 					
-					_hexes.append(hex)
+					add_hex(hex)
 
+func add_hex(hex: Hex):
+	if hex == null:
+		return
+	_hexes[hex.get_coords()] = hex
+	_hexes_array.append(hex)
 
 func _draw_map():
-	for hex in _hexes:
+	for hex in _hexes_array:
 		_tile_map.set_cell(hex.get_offset_coords().x, hex.get_offset_coords().y, hex.get_terrain_type())
 
 func get_hex_at_coords(coords: Vector2) -> Hex:
-	for hex in _hexes:
-		if hex.get_coords() == coords:
-			return hex
+	if _hexes.has(coords):
+		return _hexes[coords]
 	return null
 
-func find_neighbours(cell: Hex) -> Array:
-	var neighbours = []
-	var cell_coords = cell.get_coords()
-	for direction in _directions:
-		var neighbour = get_hex_at_coords(cell_coords + direction)
-		if neighbour != null:
-			neighbours.append(neighbour)
-	return neighbours
-
-func find_passable_neighbours(cell: Hex) -> Array:
-	var all_neighbours = find_neighbours(cell)
-	var passable_neighbours = []
-	for neighbour in all_neighbours:
-		if neighbour.is_passable():
-			passable_neighbours.append(neighbour)
-	return passable_neighbours
+#func find_neighbours(cell: Hex) -> Array:
+#	var neighbours = []
+#	var cell_coords = cell.get_coords()
+#	for direction in _directions:
+#		var neighbour = get_hex_at_coords(cell_coords + direction)
+#		if neighbour != null:
+#			neighbours.append(neighbour)
+#	return neighbours
+#
+#func find_passable_neighbours(cell: Hex) -> Array:
+#	var all_neighbours = find_neighbours(cell)
+#	var passable_neighbours = []
+#	for neighbour in all_neighbours:
+#		if neighbour.is_passable():
+#			passable_neighbours.append(neighbour)
+#	return passable_neighbours
 
 func find_hex_distance(a: Hex, b: Hex) -> int:
 	var coord_difference = a.get_coords() - b.get_coords()
@@ -126,10 +135,8 @@ class PriorityQueue:
 		return queue.size()
 
 func find_path_between(start: Hex, goal: Hex) -> Array:
-	#cannot find a path between cells that do not exist and trying to find a path to a hex that is
-	# surrounded by impassable terrain is pointless
-	if start == null or goal == null or find_passable_neighbours(goal).size() == 0:
-		print("a")
+	#cannot find a path between cells that do not exist
+	if start == null or goal == null:
 		return Array()
 	var frontier = PriorityQueue.new()
 	frontier.push(start, 0)
@@ -144,13 +151,15 @@ func find_path_between(start: Hex, goal: Hex) -> Array:
 		#check that we're not at the goal
 		if current_cell == goal:
 			break
-		for neighbour in find_passable_neighbours(current_cell):
-			var new_cost = cost_to[current_cell] + neighbour.get_movement_cost()
-			if !cost_to.has(neighbour) or new_cost < cost_to[neighbour]:
-				cost_to[neighbour] = new_cost
-				var priority = new_cost + _pathing_heuristic_multiplier * find_hex_distance(neighbour, goal)
-				frontier.push(neighbour, priority)
-				came_from[neighbour] = current_cell
+		for direction in _directions:
+			var neighbour = get_hex_at_coords(current_cell.get_coords() + direction)
+			if neighbour != null and neighbour.is_passable():
+				var new_cost = cost_to[current_cell] + neighbour.get_movement_cost()
+				if !cost_to.has(neighbour) or new_cost < cost_to[neighbour]:
+					cost_to[neighbour] = new_cost
+					var priority = new_cost + _pathing_heuristic_multiplier * find_hex_distance(neighbour, goal)
+					frontier.push(neighbour, priority)
+					came_from[neighbour] = current_cell
 	#once a path has been found (or not found) turn it into an array of hexes
 	var path = null
 	if came_from.has(goal):
@@ -199,5 +208,5 @@ func set_hex_terrain(hex: Hex, terrain_type: int):
 	_tile_map.set_cell(hex.get_offset_coords().x, hex.get_offset_coords().y, terrain_type)
 
 func set_terrain_all_tiles(terrain: int):
-	for hex in _hexes:
+	for hex in _hexes_array:
 		set_hex_terrain(hex, terrain)

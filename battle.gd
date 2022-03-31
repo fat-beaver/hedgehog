@@ -24,7 +24,6 @@ func _process(delta):
 	camera.move_local_x(movement_vector.x * camera_movement_mult * delta * zoom_level)
 	camera.move_local_y(movement_vector.y * camera_movement_mult * delta * zoom_level)
 	
-	var hex_coords_of_mouse = grid.hex_coords_of_point(get_global_mouse_position())
 	if Input.is_action_pressed("left_click"):
 		var mouse_hex = grid.get_hex_at_coords(grid.hex_coords_of_point(get_global_mouse_position()))
 		if last_mouse_hex != mouse_hex and mouse_hex != null:
@@ -38,10 +37,8 @@ func _process(delta):
 
 	if Input.is_action_just_released("zoom_out") and zoom_level < max_zoom:
 		zoom_level += 0.25
-		print(zoom_level)
 		camera.zoom = Vector2(zoom_level, zoom_level)
 
 	if Input.is_action_just_released("zoom_in") and zoom_level > min_zoom:
 		zoom_level -= 0.25
-		print(zoom_level)
 		camera.zoom = Vector2(zoom_level, zoom_level)
