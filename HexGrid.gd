@@ -6,7 +6,7 @@ onready var _tile_map = $TileMap
 onready var _camera = $Camera2D
 onready var _path = $HexPath
 
-const map_size = 10
+const map_size = 40
 const _mouse_offset_x = -98
 const _mouse_offset_y = -62
 const _pathing_heuristic_multiplier = 6
@@ -138,7 +138,6 @@ func find_path_between(start: Hex, goal: Hex) -> Array:
 		if current_cell == goal:
 			break
 		for neighbour in find_passable_neighbours(current_cell):
-			set_hex_terrain(neighbour, 2)
 			var new_cost = cost_to[current_cell] + neighbour.get_movement_cost()
 			if !cost_to.has(neighbour) or new_cost < cost_to[neighbour]:
 				cost_to[neighbour] = new_cost
