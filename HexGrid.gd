@@ -4,14 +4,14 @@ class_name HexGrid
 
 onready var _tile_map = $TileMap
 onready var _camera = $Camera2D
+onready var _path = $HexPath
 
-const map_size = 6
+const map_size = 10
 const _mouse_offset_x = -98
 const _mouse_offset_y = -62
+const _pathing_heuristic_multiplier = 6
 
-#constants for hex size, cannot get these from tilemap because the size used for scaling is not the actual size
-const hex_width = 192
-const hex_height = 128
+var _current_path = []
 
 var _hexes = []
 const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
@@ -21,14 +21,7 @@ func _ready():
 	_generate_map()
 	_draw_map()
 	#centre the camera on hex (0,0)
-	_camera.set_global_position(hex_to_point(get_hex_at_coords(Vector2(0, 0))))
-	
-	var path_start = get_hex_at_coords(Vector2(-4, 0))
-	var path_end = get_hex_at_coords(Vector2(2, -4))
-	_draw_map()
-	var path = find_path_between(path_start, path_end)
-	for hex in path:
-		set_hex_terrain(hex, 3)
+	_camera.set_global_position(get_hex_at_coords(Vector2(0, 0)).get_centre_point())
 
 func _generate_map():
 	#create all of the hexes to fill a sample map
@@ -41,8 +34,13 @@ func _generate_map():
 				if q + r + s == 0:
 					var hex = Hex.new(Vector2(q,r), 0)
 					#set the terrain of the hex to its distance from the centre, as a demonstration
-					hex.set_terrain_type(find_hex_distance(tempCentreHex, hex) / 2 %4)
+					#hex.set_terrain_type(find_hex_distance(tempCentreHex, hex) / 2 %4)
+					if find_hex_distance(tempCentreHex, hex) < 4:
+						hex.set_terrain_type(1)
+					else:
+						hex.set_terrain_type(0)
 					_hexes.append(hex)
+
 
 func _draw_map():
 	for hex in _hexes:
@@ -67,7 +65,7 @@ func find_passable_neighbours(cell: Hex) -> Array:
 	var all_neighbours = find_neighbours_of(cell)
 	var passable_neighbours = []
 	for neighbour in all_neighbours:
-		if neighbour.get_passable():
+		if neighbour.is_passable():
 			passable_neighbours.append(neighbour)
 	return passable_neighbours
 
@@ -81,11 +79,14 @@ class PriorityQueue:
 	class QueueElement:
 		var _priority: float setget , get_priority
 		var _element setget , get_element
+
 		func _init(element, priority: float):
 			_element = element
 			_priority = priority
+
 		func get_priority() -> float:
 			return _priority
+
 		func get_element():
 			return _element
 	
@@ -101,16 +102,28 @@ class PriorityQueue:
 		return false
 
 	func pop() -> Hex:
+		var lowest_priority = 0
+		for i in range(1, queue.size()):
+			if queue[i].get_priority() < queue[lowest_priority].get_priority():
+				lowest_priority = i
+		var to_remove = queue[lowest_priority]
+		queue.remove(lowest_priority)
+		return to_remove.get_element()
+
+	func old_pop() -> Hex:
 		var lowest_priority = queue[0]
 		for element in queue:
 			if element.get_priority() < lowest_priority.get_priority():
 				lowest_priority = element
 		queue.remove(queue.find(lowest_priority))
 		return lowest_priority.get_element()
+
 	func get_size():
 		return queue.size()
 
 func find_path_between(start: Hex, goal: Hex) -> Array:
+	if start == null or goal == null:
+		return Array()
 	var frontier = PriorityQueue.new()
 	frontier.push(start, 0)
 	#create dictionaries to hold where the path came from to reach each cell and how much it cost
@@ -125,10 +138,11 @@ func find_path_between(start: Hex, goal: Hex) -> Array:
 		if current_cell == goal:
 			break
 		for neighbour in find_passable_neighbours(current_cell):
+			set_hex_terrain(neighbour, 2)
 			var new_cost = cost_to[current_cell] + neighbour.get_movement_cost()
 			if !cost_to.has(neighbour) or new_cost < cost_to[neighbour]:
 				cost_to[neighbour] = new_cost
-				var priority = new_cost + find_hex_distance(neighbour, goal)
+				var priority = new_cost + _pathing_heuristic_multiplier * find_hex_distance(neighbour, goal)
 				frontier.push(neighbour, priority)
 				came_from[neighbour] = current_cell
 	#once a path has been found (or not found) turn it into an array of hexes
@@ -148,18 +162,11 @@ func hex_coords_of_point(point: Vector2) -> Vector2:
 	#adjust the points a bit to make them line up with the tilemap placement
 	point.x += _mouse_offset_x
 	point.y += _mouse_offset_y
+	#a slight multiplier to improve detection when far from the origin
+	point.y *= 0.978
 	coords.x = 1.0 / 192.0 * point.x - (1.0 / 184.0) * point.y
 	coords.y = 0 * point.x + 1.0 / 92.0 * point.y
 	return round_hex_coords(coords)
-
-func hex_to_point(hex: Hex) -> Vector2:
-	if hex == null:
-		return Vector2()
-	var coords = hex.get_coords()
-	var point: Vector2 = Vector2()
-	point.x = 192 * coords.x + 96 * coords.y + hex_width / 2.0
-	point.y = 0 * coords.x + 92 * coords.y  + hex_height / 2.0
-	return point
 
 func round_hex_coords(coords: Vector2) -> Vector2:
 	#round each coord and extract s
@@ -184,3 +191,7 @@ func set_hex_terrain(hex: Hex, terrain_type: int):
 		return
 	hex.set_terrain_type(terrain_type)
 	_tile_map.set_cell(hex.get_offset_coords().x, hex.get_offset_coords().y, terrain_type)
+
+func set_terrain_all_tiles(terrain: int):
+	for hex in _hexes:
+		set_hex_terrain(hex, terrain)
