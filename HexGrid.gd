@@ -2,11 +2,12 @@ extends Node2D
 class_name HexGrid
 
 
-onready var _tile_map = $TileMap
-onready var _camera = $Camera2D
-onready var _path = $HexPath
+var _tile_map = TileMap.new()
+#tilemap constants
+const tileset_name = "testing_tileset.tres"
+const graphical_hex_size = Vector2(192, 94)
 
-const map_size = 40
+const map_size = 25
 const _mouse_offset_x = -98
 const _mouse_offset_y = -62
 #a multiplier for the pathing heuristic equal to the movement cost of a "standard" tile so that the
@@ -22,11 +23,19 @@ var _hexes_array: Array = []
 
 const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
 
-func _ready():
+func _init():
 	#generate the map
 	randomize()
+	_set_up_tilemap()
 	_generate_map()
 	_draw_map()
+
+func _set_up_tilemap():
+	add_child(_tile_map)
+	_tile_map.tile_set = load(tileset_name)
+	_tile_map.cell_size = graphical_hex_size
+	_tile_map.cell_half_offset = 0
+	_tile_map.cell_y_sort = true
 
 func _generate_map():
 	#create all of the hexes to fill a sample map
@@ -119,7 +128,7 @@ class PriorityQueue:
 
 func find_path_between(start: Hex, goal: Hex) -> Array:
 	#cannot find a path between cells that do not exist
-	if start == null or goal == null:
+	if start == null or goal == null or !start.is_passable() or !goal.is_passable():
 		return Array()
 	var frontier = PriorityQueue.new()
 	frontier.push(start, 0)

@@ -5,6 +5,13 @@ var _current_path = []
 
 const _path_thickness = 10
 
+func _init(path):
+	if path == null:
+		clear_path()
+	else:
+		_current_path = path
+	update()
+
 func _draw():
 	if _current_path == null:
 		return

@@ -9,9 +9,6 @@ var terrain_type :int setget set_terrain_type, get_terrain_type
 const hex_width = 192
 const hex_height = 128
 
-func _ready():
-	pass
-
 func _init(new_coords: Vector2, new_terrain_type: int):
 	coords = new_coords
 	set_terrain_type(new_terrain_type)

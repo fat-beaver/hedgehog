@@ -1,42 +1,6 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://testing_tileset.tres" type="TileSet" id=1]
 [ext_resource path="res://battle.gd" type="Script" id=2]
-[ext_resource path="res://art/ferret/png/test_1.png" type="Texture" id=3]
-[ext_resource path="res://art/hedgehog/png/test_1.png" type="Texture" id=4]
-[ext_resource path="res://HexGrid.gd" type="Script" id=5]
-[ext_resource path="res://HexPath.gd" type="Script" id=6]
 
 [node name="battle" type="Node2D"]
 script = ExtResource( 2 )
-
-[node name="HexGrid" type="Node2D" parent="."]
-script = ExtResource( 5 )
-
-[node name="TileMap" type="TileMap" parent="HexGrid"]
-position = Vector2( 1, 0 )
-tile_set = ExtResource( 1 )
-cell_size = Vector2( 192, 94 )
-cell_custom_transform = Transform2D( 0, 0, 0, 0, 0, 0 )
-cell_half_offset = 0
-cell_y_sort = true
-show_collision = true
-format = 1
-
-[node name="HexPath" type="Node2D" parent="HexGrid"]
-script = ExtResource( 6 )
-
-[node name="Camera2D" type="Camera2D" parent="HexGrid"]
-current = true
-
-[node name="Ferret #1" type="Node2D" parent="."]
-position = Vector2( -672, 64 )
-
-[node name="Sprite" type="Sprite" parent="Ferret #1"]
-texture = ExtResource( 3 )
-
-[node name="Hedgehog #1" type="Node2D" parent="."]
-position = Vector2( 864, 64 )
-
-[node name="Sprite" type="Sprite" parent="Hedgehog #1"]
-texture = ExtResource( 4 )
