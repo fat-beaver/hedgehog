@@ -65,23 +65,6 @@ func get_hex_at_coords(coords: Vector2) -> Hex:
 		return _hexes[coords]
 	return null
 
-#func find_neighbours(cell: Hex) -> Array:
-#	var neighbours = []
-#	var cell_coords = cell.get_coords()
-#	for direction in _directions:
-#		var neighbour = get_hex_at_coords(cell_coords + direction)
-#		if neighbour != null:
-#			neighbours.append(neighbour)
-#	return neighbours
-#
-#func find_passable_neighbours(cell: Hex) -> Array:
-#	var all_neighbours = find_neighbours(cell)
-#	var passable_neighbours = []
-#	for neighbour in all_neighbours:
-#		if neighbour.is_passable():
-#			passable_neighbours.append(neighbour)
-#	return passable_neighbours
-
 func find_hex_distance(a: Hex, b: Hex) -> int:
 	var coord_difference = a.get_coords() - b.get_coords()
 	return ((abs(coord_difference.x) + abs(coord_difference.x + coord_difference.y) + abs(coord_difference.y)) / 2) as int
