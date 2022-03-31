@@ -18,10 +18,9 @@ const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), V
 
 func _ready():
 	#generate the map
+	randomize()
 	_generate_map()
 	_draw_map()
-	#centre the camera on hex (0,0)
-	_camera.set_global_position(get_hex_at_coords(Vector2(0, 0)).get_centre_point())
 
 func _generate_map():
 	#create all of the hexes to fill a sample map
@@ -35,10 +34,15 @@ func _generate_map():
 					var hex = Hex.new(Vector2(q,r), 0)
 					#set the terrain of the hex to its distance from the centre, as a demonstration
 					#hex.set_terrain_type(find_hex_distance(tempCentreHex, hex) / 2 %4)
-					if find_hex_distance(tempCentreHex, hex) < 4:
-						hex.set_terrain_type(1)
-					else:
+					var hex_terrain_raw = rand_range(0,12)
+					
+					if hex_terrain_raw >= 0 and hex_terrain_raw < 6:
 						hex.set_terrain_type(0)
+					elif hex_terrain_raw >= 6 and hex_terrain_raw < 11:
+						hex.set_terrain_type(2)
+					else:
+						hex.set_terrain_type(1)
+					
 					_hexes.append(hex)
 
 
@@ -52,7 +56,7 @@ func get_hex_at_coords(coords: Vector2) -> Hex:
 			return hex
 	return null
 
-func find_neighbours_of(cell: Hex) -> Array:
+func find_neighbours(cell: Hex) -> Array:
 	var neighbours = []
 	var cell_coords = cell.get_coords()
 	for direction in _directions:
@@ -62,7 +66,7 @@ func find_neighbours_of(cell: Hex) -> Array:
 	return neighbours
 
 func find_passable_neighbours(cell: Hex) -> Array:
-	var all_neighbours = find_neighbours_of(cell)
+	var all_neighbours = find_neighbours(cell)
 	var passable_neighbours = []
 	for neighbour in all_neighbours:
 		if neighbour.is_passable():
@@ -122,7 +126,10 @@ class PriorityQueue:
 		return queue.size()
 
 func find_path_between(start: Hex, goal: Hex) -> Array:
-	if start == null or goal == null:
+	#cannot find a path between cells that do not exist and trying to find a path to a hex that is
+	# surrounded by impassable terrain is pointless
+	if start == null or goal == null or find_passable_neighbours(goal).size() == 0:
+		print("a")
 		return Array()
 	var frontier = PriorityQueue.new()
 	frontier.push(start, 0)

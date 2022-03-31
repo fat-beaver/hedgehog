@@ -23,11 +23,11 @@ cell_y_sort = true
 show_collision = true
 format = 1
 
-[node name="HexPath" type="Node2D" parent="HexGrid"]
-script = ExtResource( 6 )
-
 [node name="Camera2D" type="Camera2D" parent="HexGrid"]
 current = true
+
+[node name="HexPath" type="Node2D" parent="HexGrid"]
+script = ExtResource( 6 )
 
 [node name="Ferret #1" type="Node2D" parent="."]
 position = Vector2( -672, 64 )

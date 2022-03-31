@@ -36,8 +36,10 @@ func get_terrain_type():
 
 func get_movement_cost():
 	var movement_cost = 0
-	if terrain_type == 0 or terrain_type == 2 :
+	if terrain_type == 0:
 		movement_cost = 6
+	elif terrain_type == 2:
+		movement_cost = 12
 	return movement_cost
 
 func passable(passablility: bool):
