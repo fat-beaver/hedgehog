@@ -7,7 +7,7 @@ var _tile_map = TileMap.new()
 const tileset_name = "testing_tileset.tres"
 const graphical_hex_size = Vector2(192, 94)
 
-const map_size = 25
+var _map_size
 const _mouse_offset_x = -98
 const _mouse_offset_y = -62
 #a multiplier for the pathing heuristic equal to the movement cost of a "standard" tile so that the
@@ -23,7 +23,8 @@ var _hexes_array: Array = []
 
 const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
 
-func _init():
+func _init(map_size):
+	_map_size = map_size
 	#generate the map
 	randomize()
 	_set_up_tilemap()
@@ -39,9 +40,9 @@ func _set_up_tilemap():
 
 func _generate_map():
 	#create all of the hexes to fill a sample map
-	for q in range(-map_size, map_size + 1):
-		for r in range(-map_size, map_size + 1):
-			for s in range(-map_size, map_size + 1):
+	for q in range(-_map_size, _map_size + 1):
+		for r in range(-_map_size, _map_size + 1):
+			for s in range(-_map_size, _map_size + 1):
 				#check if this particular cell could actually exist (all cube-coordinate cells have
 				# the constraint q + r + s = 0)
 				if q + r + s == 0:

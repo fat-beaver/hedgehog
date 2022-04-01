@@ -28,3 +28,6 @@ func set_path(path):
 func clear_path():
 	_current_path = null
 	update()
+
+func get_path_length():
+	return _current_path.size()

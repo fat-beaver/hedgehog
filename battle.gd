@@ -14,19 +14,19 @@ const ferret_coords = Vector2(-4, 0)
 #hedgehog constants
 const hedgehog_sprite_location = "art/hedgehog/png/test_1.png"
 const hedgehog_coords = Vector2(4, 0)
-#store the hex the ferret is in so pathing can start from there
+#the hexes the critters are in
 var ferret_hex
 var hedgehog_hex
-
+#map constants
+const map_size = 40
+#children
 var path = HexPath.new(null)
 var camera = Camera2D.new()
-var grid = HexGrid.new()
+var grid = HexGrid.new(map_size)
 var ferret = Node2D.new()
 var hedgehog = Node2D.new()
 
 func _ready():
-	ferret_hex = grid.get_hex_at_coords(ferret_coords)
-	hedgehog_hex = grid.get_hex_at_coords(hedgehog_coords)
 	#add all of the children
 	add_child(grid)
 	add_child(path)
@@ -43,17 +43,19 @@ func _set_up_camera():
 
 func _set_up_critters():
 	add_child(ferret)
-	ferret.position = ferret_hex.get_centre_point()
-	var ferret_sprite = Sprite.new()
-	ferret_sprite.texture = load(ferret_sprite_location)
-	ferret.add_child(ferret_sprite)
-	#make sure that the ferret is not in water
-	grid.set_hex_terrain(ferret_hex, 0)
 	add_child(hedgehog)
-	hedgehog.position = hedgehog_hex.get_centre_point()
+	#place the critters in their places
+	move_ferret(grid.get_hex_at_coords(ferret_coords))
+	move_hedgehog(grid.get_hex_at_coords(hedgehog_coords))
+	#load sprites and add a sprite to each critter
+	var ferret_sprite = Sprite.new()
 	var hedgehog_sprite = Sprite.new()
+	ferret_sprite.texture = load(ferret_sprite_location)
 	hedgehog_sprite.texture = load(hedgehog_sprite_location)
+	ferret.add_child(ferret_sprite)
 	hedgehog.add_child(hedgehog_sprite)
+	#make sure that the critters are on grass
+	grid.set_hex_terrain(ferret_hex, 0)
 	grid.set_hex_terrain(hedgehog_hex, 0)
 
 func _process(delta):
@@ -69,6 +71,16 @@ func _process(delta):
 			path.set_path(grid.find_path_between(path_start, path_end))
 			last_mouse_hex = mouse_hex
 
+	if Input.is_action_just_released("left_click"):
+		var mouse_hex = grid.get_hex_at_coords(grid.hex_coords_of_point(get_global_mouse_position()))
+		if mouse_hex != null:
+			var path_start = ferret_hex
+			var path_end = mouse_hex
+			path.set_path(grid.find_path_between(path_start, path_end))
+			if path.get_path_length() != 0:
+				move_ferret(path_end)
+			last_mouse_hex = mouse_hex
+
 	if Input.is_action_just_released("zoom_out") and zoom_level < max_zoom:
 		zoom_level += 0.25
 		camera.zoom = Vector2(zoom_level, zoom_level)
@@ -76,3 +88,11 @@ func _process(delta):
 	if Input.is_action_just_released("zoom_in") and zoom_level > min_zoom:
 		zoom_level -= 0.25
 		camera.zoom = Vector2(zoom_level, zoom_level)
+
+func move_ferret(hex: Hex):
+	ferret_hex = hex
+	ferret.position = ferret_hex.get_centre_point()
+
+func move_hedgehog(hex: Hex):
+	hedgehog_hex = hex
+	hedgehog.position = hedgehog_hex.get_centre_point()
