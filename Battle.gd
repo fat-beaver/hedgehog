@@ -21,6 +21,7 @@ var camera = Camera2D.new()
 var grid = HexGrid.new(map_size)
 var ferret = Critter.new(Critter.FERRET, grid.get_hex_at_coords(ferret_coords), default_unit_direction)
 var hedgehog = Critter.new(Critter.HEDGEHOG, grid.get_hex_at_coords(hedgehog_coords), default_unit_direction)
+var current_critter = ferret
 
 func _ready():
 	#add all of the children
@@ -48,7 +49,10 @@ func _process(delta):
 	camera.move_local_y(movement_vector.y * camera_movement_mult * delta * camera.zoom.y)
 	
 	if Input.is_action_just_pressed("left_click"):
-		_move_critter_to_mouse(ferret)
+		_move_critter_to_mouse(current_critter)
+
+	if Input.is_action_just_pressed("right_click"):
+		_turn_critter(current_critter)
 
 	if Input.is_action_just_released("zoom_out"):
 		zoom(zoom_increment)
@@ -56,17 +60,32 @@ func _process(delta):
 	if Input.is_action_just_released("zoom_in"):
 		zoom(-zoom_increment)
 
+	if Input.is_action_just_pressed("change_critter"):
+		if current_critter == ferret:
+			current_critter = hedgehog
+		else:
+			current_critter = ferret
+
 func _move_critter_to_mouse(critter: Critter):
-	var mouse_hex = grid.get_hex_at_coords(grid.hex_coords_of_point(get_global_mouse_position()))
+	var mouse_hex = grid.get_hex_at_mouse()
 	if mouse_hex != null:
 		var path_start = critter.get_location()
 		var path_end = mouse_hex
 		if mouse_hex != last_mouse_hex:
 			path.set_path(grid.find_path_between(path_start, path_end, default_unit_direction))
-		else:
-			critter.move(path_end)
+		elif path.get_path_length() != 0:
+			critter.move(path.get_end()[0])
+			critter.set_direction(path.get_end()[1])
 			path.clear_path()
 		last_mouse_hex = mouse_hex
+
+func _turn_critter(critter: Critter):
+	if grid.get_hex_at_mouse() != null:
+		var direction = grid.get_hex_at_mouse().get_coords() - critter.get_location().get_coords()
+		if grid.directions.has(direction):
+			critter.set_direction(direction)
+			#once critter time units are tracked this will also have to subtract the correct number
+			# based on grid.directions_costs
 
 func zoom(zoom: float):
 	if zoom > 0:

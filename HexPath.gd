@@ -21,6 +21,7 @@ func _draw():
 		draw_string(_font, _current_path[i][0].get_centre_point(), _current_path[i][2] as String)
 
 func set_path(path: Array):
+	#each array element is 0:hex, 1:direction, 2:cost
 	if path == null:
 		clear_path()
 	else:
@@ -28,12 +29,14 @@ func set_path(path: Array):
 		update()
 
 func clear_path():
-	_current_path = null
+	_current_path.clear()
 	update()
 
 func get_path_length() -> int:
 	return _current_path.size()
 
-func get_end() -> Array:
+func get_end():
+	if _current_path.size() == 0:
+		return null
 	return _current_path[_current_path.size() - 1]
 

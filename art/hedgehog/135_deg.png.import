@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/test_1.png-d27e3c3d4134704f6bb3b1bd080954bd.stex"
+path="res://.import/135_deg.png-bb9ae9c7e5a16c3f2d298340f03d8a9d.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/ferret/png/test_1.png"
-dest_files=[ "res://.import/test_1.png-d27e3c3d4134704f6bb3b1bd080954bd.stex" ]
+source_file="res://art/hedgehog/135_deg.png"
+dest_files=[ "res://.import/135_deg.png-bb9ae9c7e5a16c3f2d298340f03d8a9d.stex" ]
 
 [params]
 

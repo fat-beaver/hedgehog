@@ -21,10 +21,10 @@ var _current_path = []
 var _hexes: Dictionary = {}
 var _hexes_array: Array = []
 
-const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
+const directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
 #store the number of turns that need to be made to turn between two given directions, there's probably
 # a better way to do this but this shouldn't be too slow
-var _directions_costs = {}
+var directions_costs = {}
 
 func _init(map_size):
 	_map_size = map_size
@@ -65,12 +65,12 @@ func _generate_map():
 					add_hex(hex)
 
 func _generate_turning_costs():
-	for i in range(_directions.size()):
-		_directions_costs[_directions[i]] = {}
-		for j in range(i, i + _directions.size() / 2):
-			_directions_costs[_directions[i]][_directions[j % _directions.size()]] = j - i
-		for j in range(i + _directions.size() / 2, i + _directions.size()):
-			_directions_costs[_directions[i]][_directions[j % _directions.size()]] = _directions.size() - j + i
+	for i in range(directions.size()):
+		directions_costs[directions[i]] = {}
+		for j in range(i, i + directions.size() / 2):
+			directions_costs[directions[i]][directions[j % directions.size()]] = j - i
+		for j in range(i + directions.size() / 2, i + directions.size()):
+			directions_costs[directions[i]][directions[j % directions.size()]] = directions.size() - j + i
 
 func add_hex(hex: Hex):
 	if hex == null:
@@ -128,14 +128,6 @@ class PriorityQueue:
 		queue.remove(lowest_priority)
 		return to_remove.get_element()
 
-	func old_pop() -> Hex:
-		var lowest_priority = queue[0]
-		for element in queue:
-			if element.get_priority() < lowest_priority.get_priority():
-				lowest_priority = element
-		queue.remove(queue.find(lowest_priority))
-		return lowest_priority.get_element()
-
 	func get_size():
 		return queue.size()
 
@@ -158,10 +150,10 @@ func find_path_between(start: Hex, goal: Hex, initial_direction: Vector2) -> Arr
 		#check that we're not at the goal
 		if current_cell == goal:
 			break
-		for direction in _directions:
+		for direction in directions:
 			var neighbour = get_hex_at_coords(current_cell.get_coords() + direction)
 			if neighbour != null and neighbour.is_passable():
-				var new_cost = cost_to[current_cell] + neighbour.get_movement_cost() + _directions_costs[arriving_direction[current_cell]][direction]
+				var new_cost = cost_to[current_cell] + neighbour.get_movement_cost() + directions_costs[arriving_direction[current_cell]][direction]
 				if !cost_to.has(neighbour) or new_cost < cost_to[neighbour]:
 					came_from[neighbour] = current_cell
 					cost_to[neighbour] = new_cost
@@ -226,3 +218,6 @@ func set_hex_terrain(hex: Hex, terrain_type: int):
 func set_terrain_all_tiles(terrain: int):
 	for hex in _hexes_array:
 		set_hex_terrain(hex, terrain)
+
+func get_hex_at_mouse() -> Hex:
+	return get_hex_at_coords(hex_coords_of_point(get_global_mouse_position()))
