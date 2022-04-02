@@ -22,11 +22,15 @@ var _hexes: Dictionary = {}
 var _hexes_array: Array = []
 
 const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
+#store the number of turns that need to be made to turn between two given directions, there's probably
+# a better way to do this but this shouldn't be too slow
+var _directions_costs = {}
 
 func _init(map_size):
 	_map_size = map_size
 	#generate the map
 	randomize()
+	_generate_turning_costs()
 	_set_up_tilemap()
 	_generate_map()
 	_draw_map()
@@ -59,6 +63,14 @@ func _generate_map():
 						hex.set_terrain_type(1)
 					
 					add_hex(hex)
+
+func _generate_turning_costs():
+	for i in range(_directions.size()):
+		_directions_costs[_directions[i]] = {}
+		for j in range(i, i + _directions.size() / 2):
+			_directions_costs[_directions[i]][_directions[j % _directions.size()]] = j - i
+		for j in range(i + _directions.size() / 2, i + _directions.size()):
+			_directions_costs[_directions[i]][_directions[j % _directions.size()]] = _directions.size() - j + i
 
 func add_hex(hex: Hex):
 	if hex == null:
@@ -127,7 +139,7 @@ class PriorityQueue:
 	func get_size():
 		return queue.size()
 
-func find_path_between(start: Hex, goal: Hex) -> Array:
+func find_path_between(start: Hex, goal: Hex, initial_direction: Vector2) -> Array:
 	#cannot find a path between cells that do not exist
 	if start == null or goal == null or !start.is_passable() or !goal.is_passable():
 		return Array()
@@ -136,8 +148,10 @@ func find_path_between(start: Hex, goal: Hex) -> Array:
 	#create dictionaries to hold where the path came from to reach each cell and how much it cost
 	var came_from: Dictionary = {}
 	var cost_to: Dictionary = {}
+	var arriving_direction: Dictionary = {}
 	came_from[start] = null
 	cost_to[start] = 0
+	arriving_direction[start] = initial_direction
 	#while there are still unchecked hexes, keep looking for a path
 	while !frontier.is_empty():
 		var current_cell: Hex = frontier.pop()
@@ -147,21 +161,30 @@ func find_path_between(start: Hex, goal: Hex) -> Array:
 		for direction in _directions:
 			var neighbour = get_hex_at_coords(current_cell.get_coords() + direction)
 			if neighbour != null and neighbour.is_passable():
-				var new_cost = cost_to[current_cell] + neighbour.get_movement_cost()
+				var new_cost = cost_to[current_cell] + neighbour.get_movement_cost() + _directions_costs[arriving_direction[current_cell]][direction]
 				if !cost_to.has(neighbour) or new_cost < cost_to[neighbour]:
+					came_from[neighbour] = current_cell
 					cost_to[neighbour] = new_cost
+					arriving_direction[neighbour] = direction
 					var priority = new_cost + _pathing_heuristic_multiplier * find_hex_distance(neighbour, goal)
 					frontier.push(neighbour, priority)
-					came_from[neighbour] = current_cell
 	#once a path has been found (or not found) turn it into an array of hexes
 	var path = null
 	if came_from.has(goal):
 		path = []
 		var current_cell = goal
 		while current_cell != start:
-			path.append(current_cell)
+			var path_entry = []
+			path_entry.append(current_cell)
+			path_entry.append(arriving_direction[current_cell])
+			path_entry.append(cost_to[current_cell])
+			path.append(path_entry)
 			current_cell = came_from[current_cell]
-		path.append(start)
+		var path_entry = []
+		path_entry.append(start)
+		path_entry.append(arriving_direction[start])
+		path_entry.append(cost_to[start])
+		path.append(path_entry)
 		path.invert()
 	return path
 

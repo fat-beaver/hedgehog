@@ -9,6 +9,16 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Node2D",
+"class": "Battle",
+"language": "GDScript",
+"path": "res://Battle.gd"
+}, {
+"base": "Node2D",
+"class": "Critter",
+"language": "GDScript",
+"path": "res://Critter.gd"
+}, {
 "base": "",
 "class": "GitAPI",
 "language": "NativeScript",
@@ -30,6 +40,8 @@ _global_script_classes=[ {
 "path": "res://HexPath.gd"
 } ]
 _global_script_class_icons={
+"Battle": "",
+"Critter": "",
 "GitAPI": "",
 "Hex": "",
 "HexGrid": "",
