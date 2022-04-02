@@ -72,7 +72,7 @@ func _move_critter_to_mouse(critter: Critter):
 		var path_start = critter.get_location()
 		var path_end = mouse_hex
 		if mouse_hex != last_mouse_hex:
-			path.set_path(grid.find_path_between(path_start, path_end, default_unit_direction))
+			path.set_path(grid.find_path_between(path_start, path_end, critter.get_direction()))
 		elif path.get_path_length() != 0:
 			critter.move(path.get_end()[0])
 			critter.set_direction(path.get_end()[1])
