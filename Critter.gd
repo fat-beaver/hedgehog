@@ -7,6 +7,9 @@ const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), V
 
 const _ferret_sprites_location = "art/ferret/"
 const _hedgehog_sprites_location = "art/hedgehog/"
+#movement vars
+var max_time_units
+var time_units
 
 var _textures = {}
 var sprite = Sprite.new()
@@ -15,23 +18,29 @@ var _type
 var _location
 var _direction
 
-func _init(new_critter_type: int, hex: Hex, direction: Vector2):
+func _init(new_critter_type: int, hex: Hex, direction: Vector2, speed):
 	_type = new_critter_type
+	max_time_units = speed
+	refresh_time_units()
 	load_textures()
-	set_direction(direction)
-	move(hex)
+	move(hex, direction, 0)
 	add_child(sprite)
 
-func move(hex: Hex):
-	_location = hex
-	position = _location.get_centre_point()
+func move(hex: Hex, direction: Vector2, movement_cost: int):
+	if time_units >= movement_cost:
+		time_units -= movement_cost
+		_location = hex
+		set_direction(direction, 0)
+		position = _location.get_centre_point()
 
 func get_location() -> Hex:
 	return _location
 
-func set_direction(direction: Vector2):
-	_direction = direction
-	sprite.texture = _textures[direction]
+func set_direction(direction: Vector2, cost: int):
+	if time_units >= cost:
+		time_units -= cost
+		_direction = direction
+		sprite.texture = _textures[direction]
 
 func get_direction() -> Vector2:
 	return _direction
@@ -49,4 +58,7 @@ func load_textures():
 	_textures[_directions[3]] = load(texture_location + "180_deg.png")
 	_textures[_directions[4]] = load(texture_location + "225_deg.png")
 	_textures[_directions[5]] = load(texture_location + "315_deg.png")
+
+func refresh_time_units():
+	time_units = max_time_units
 
