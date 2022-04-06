@@ -34,6 +34,10 @@ func _ready():
 	hedgehog = Critter.new(Critter.HEDGEHOG, map.get_hex_at_coords(hedgehog_coords), default_unit_direction, default_time_units)
 	_set_up_critter(hedgehog)
 	current_critter = ferret
+	grid.clear_tiles_to_draw()
+	grid.add_tiles_to_draw(find_visible_tiles(ferret))
+	grid.add_tiles_to_draw(find_visible_tiles(hedgehog))
+	grid._draw_map()
 
 func _set_up_camera():
 	add_child(camera)
@@ -83,6 +87,10 @@ func _move_critter_to_mouse(critter: Critter):
 			critter.move(path.get_end()[0], path.get_end()[1], path.get_end()[2])
 			path.clear_path()
 		last_mouse_hex = mouse_hex
+		grid.clear_tiles_to_draw()
+		grid.add_tiles_to_draw(find_visible_tiles(ferret))
+		grid.add_tiles_to_draw(find_visible_tiles(hedgehog))
+		grid._draw_map()
 
 func _turn_critter(critter: Critter):
 	if grid.get_hex_at_mouse() != null:
@@ -90,6 +98,10 @@ func _turn_critter(critter: Critter):
 		if map.directions.has(direction):
 			var turning_cost = map.get_turning_costs(critter.get_direction(), direction)
 			critter.set_direction(direction, turning_cost)
+			grid.clear_tiles_to_draw()
+			grid.add_tiles_to_draw(find_visible_tiles(ferret))
+			grid.add_tiles_to_draw(find_visible_tiles(hedgehog))
+			grid._draw_map()
 
 func zoom(zoom: float):
 	if zoom > 0:
@@ -111,3 +123,18 @@ func _end_turn():
 	ferret.refresh_time_units()
 	hedgehog.refresh_time_units()
 	last_mouse_hex = null
+
+func find_visible_tiles(critter: Critter) -> Array:
+	var visible_tiles = Array()
+	visible_tiles.append(critter.get_location())
+	for hex in map.get_hexes_array():
+		if map.find_hex_distance(critter.get_location(), hex) == critter.get_view_range():
+			var distance: Vector2 = hex.get_centre_point() - critter.get_location().get_centre_point()
+			for i in range(critter.get_view_range()):
+				#need to adjust for the fact that hex axial(0,0) does not have the centre point point(0,0)
+				var point_to_check = (distance * (i + 1) / critter.get_view_range()) + critter.get_location().get_centre_point() - map.get_hex_at_coords(Vector2(0, 0)).get_centre_point()
+				var hex_to_check = map.get_hex_at_point(point_to_check)
+				visible_tiles.append(hex_to_check)
+				if hex_to_check.get_terrain_type() == 3:
+					break
+	return visible_tiles

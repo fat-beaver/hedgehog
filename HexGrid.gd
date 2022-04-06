@@ -1,6 +1,7 @@
 extends Node2D
 class_name HexGrid
 
+var _tiles_to_draw = Array()
 
 var _tile_map = TileMap.new()
 #tilemap constants
@@ -15,7 +16,6 @@ var _map: Map
 func _init(new_map: Map):
 	_map = new_map
 	_set_up_tilemap()
-	_draw_map()
 
 func _set_up_tilemap():
 	add_child(_tile_map)
@@ -25,7 +25,8 @@ func _set_up_tilemap():
 	_tile_map.cell_y_sort = true
 
 func _draw_map():
-	for hex in _map.get_hexes_array():
+	_tile_map.clear()
+	for hex in _tiles_to_draw:
 		_tile_map.set_cell(hex.get_offset_coords().x, hex.get_offset_coords().y, hex.get_terrain_type())
 
 func set_hex_terrain(hex: Hex, terrain_type: int):
@@ -37,3 +38,9 @@ func set_hex_terrain(hex: Hex, terrain_type: int):
 func get_hex_at_mouse() -> Hex:
 	var adjusted_mouse_point = get_global_mouse_position() + _mouse_offset_vector
 	return _map.get_hex_at_point(adjusted_mouse_point)
+
+func add_tiles_to_draw(tiles_to_draw: Array):
+	_tiles_to_draw.append_array(tiles_to_draw)
+
+func clear_tiles_to_draw():
+	_tiles_to_draw.clear()

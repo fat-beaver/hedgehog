@@ -33,7 +33,7 @@ func _generate_map():
 					if hex_terrain_raw >= 0 and hex_terrain_raw < 6:
 						hex.set_terrain_type(0)
 					elif hex_terrain_raw >= 6 and hex_terrain_raw < 11:
-						hex.set_terrain_type(2)
+						hex.set_terrain_type(3)
 					else:
 						hex.set_terrain_type(1)
 

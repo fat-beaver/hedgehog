@@ -8,6 +8,7 @@ var terrain_type :int setget set_terrain_type, get_terrain_type
 #constants for hex size, cannot get these from tilemap because the size used for scaling is not the actual size
 const hex_width = 192
 const hex_height = 128
+const graphical_hex_size = Vector2(192, 94)
 
 func _init(new_coords: Vector2, new_terrain_type: int):
 	coords = new_coords

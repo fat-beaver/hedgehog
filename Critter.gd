@@ -5,6 +5,8 @@ enum {FERRET, HEDGEHOG}
 
 const _directions = [Vector2(1,0), Vector2(0,1), Vector2(-1,1), Vector2(-1,0), Vector2(0,-1), Vector2(1,-1)]
 
+const _view_range = 7
+
 const _ferret_sprites_location = "art/ferret/"
 const _hedgehog_sprites_location = "art/hedgehog/"
 #movement vars
@@ -62,3 +64,5 @@ func load_textures():
 func refresh_time_units():
 	time_units = max_time_units
 
+func get_view_range():
+	return _view_range
