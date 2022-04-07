@@ -140,6 +140,6 @@ func find_visible_tiles(critter: Critter) -> Array:
 					var hex_to_check = map.get_hex_at_point(point_to_check)
 					if !visible_tiles.has(hex_to_check):
 						visible_tiles.append(hex_to_check)
-					if hex_to_check.get_terrain_type() == 3:
+					if !hex_to_check.is_transparent():
 						break
 	return visible_tiles

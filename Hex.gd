@@ -2,8 +2,9 @@ extends Resource
 class_name Hex
 
 var coords: Vector2
-var passable: bool setget set_passable, is_passable
-var terrain_type :int setget set_terrain_type, get_terrain_type
+var passable: bool setget , is_passable
+var transparent: bool setget , is_transparent
+var terrain_type : int setget set_terrain_type, get_terrain_type
 
 #constants for hex size, cannot get these from tilemap because the size used for scaling is not the actual size
 const hex_width = 192
@@ -24,10 +25,18 @@ func get_offset_coords() -> Vector2:
 	
 func set_terrain_type(new_terrain_type: int):
 	terrain_type = new_terrain_type
-	if terrain_type == 1 or terrain_type == 3:
-		passable = false
-	else:
-		passable = true
+	passable = true
+	transparent = true
+	match terrain_type:
+		0:
+			pass
+		1:
+			passable = false
+		2:
+			pass
+		3:
+			passable = false
+			transparent = false
 
 func get_terrain_type():
 	return terrain_type
@@ -40,11 +49,11 @@ func get_movement_cost():
 		movement_cost = 12
 	return movement_cost
 
-func set_passable(passablility: bool):
-	passable = passablility
-
 func is_passable():
 	return passable
+
+func is_transparent():
+	return transparent
 
 func get_centre_point() -> Vector2:
 	var point: Vector2 = Vector2()
