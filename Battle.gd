@@ -130,11 +130,16 @@ func find_visible_tiles(critter: Critter) -> Array:
 	for hex in map.get_hexes_array():
 		if map.find_hex_distance(critter.get_location(), hex) == critter.get_view_range():
 			var distance: Vector2 = hex.get_centre_point() - critter.get_location().get_centre_point()
-			for i in range(critter.get_view_range()):
-				#need to adjust for the fact that hex axial(0,0) does not have the centre point point(0,0)
-				var point_to_check = (distance * (i + 1) / critter.get_view_range()) + critter.get_location().get_centre_point() - map.get_hex_at_coords(Vector2(0, 0)).get_centre_point()
-				var hex_to_check = map.get_hex_at_point(point_to_check)
-				visible_tiles.append(hex_to_check)
-				if hex_to_check.get_terrain_type() == 3:
-					break
+			#check if the first hex to check is the hex the critter is facing
+			var first_point_check = (distance / critter.get_view_range()) + critter.get_location().get_centre_point() - map.get_hex_at_coords(Vector2(0, 0)).get_centre_point()
+			var first_hex_check = map.get_hex_at_point(first_point_check)
+			if critter.get_direction() == first_hex_check.get_coords() - critter.get_location().get_coords():
+				for i in range(critter.get_view_range()):
+					#need to adjust for the fact that hex axial(0,0) does not have the centre point point(0,0)
+					var point_to_check = (distance * (i + 1) / critter.get_view_range()) + critter.get_location().get_centre_point() - map.get_hex_at_coords(Vector2(0, 0)).get_centre_point()
+					var hex_to_check = map.get_hex_at_point(point_to_check)
+					if !visible_tiles.has(hex_to_check):
+						visible_tiles.append(hex_to_check)
+					if hex_to_check.get_terrain_type() == 3:
+						break
 	return visible_tiles
