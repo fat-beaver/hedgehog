@@ -165,9 +165,3 @@ func find_visible_tiles(critter: Critter) -> Array:
 					if !hex_to_check.is_transparent():
 						break
 	return visible_tiles
-
-func find_critter_in_tile(hex: Hex, team: Team):
-	for critter in team.get_critters():
-		if critter.get_location() == hex:
-			return critter
-	return null
