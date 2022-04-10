@@ -22,6 +22,8 @@ var _direction
 var _team
 
 func _init(new_critter_type: int, hex: Hex, direction: Vector2, speed: int, team: Team):
+	hex.set_terrain_type(Hex.GRASS)
+	team.add_critter(self)
 	_type = new_critter_type
 	max_time_units = speed
 	refresh_time_units()

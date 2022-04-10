@@ -35,9 +35,9 @@ func _ready():
 	add_child(teams[Critter.FERRET])
 	add_child(teams[Critter.HEDGEHOG])
 	_set_up_camera()
-	_set_up_critter(Critter.new(Critter.FERRET, map.get_hex_at_coords(ferret_one_coords), default_unit_direction, default_time_units, teams[Critter.FERRET]))
-	_set_up_critter(Critter.new(Critter.FERRET, map.get_hex_at_coords(ferret_two_coords), default_unit_direction, default_time_units, teams[Critter.FERRET]))
-	_set_up_critter(Critter.new(Critter.HEDGEHOG, map.get_hex_at_coords(hedgehog_coords), default_unit_direction, default_time_units, teams[Critter.HEDGEHOG]))
+	Critter.new(Critter.FERRET, map.get_hex_at_coords(ferret_one_coords), default_unit_direction, default_time_units, teams[Critter.FERRET])
+	Critter.new(Critter.FERRET, map.get_hex_at_coords(ferret_two_coords), default_unit_direction, default_time_units, teams[Critter.FERRET])
+	Critter.new(Critter.HEDGEHOG, map.get_hex_at_coords(hedgehog_coords), default_unit_direction, default_time_units, teams[Critter.HEDGEHOG])
 	find_team_visibility(current_team)
 
 func _set_up_camera():
@@ -48,22 +48,20 @@ func _set_up_camera():
 	camera.set_global_position(map.get_hex_at_coords(Vector2(0, 0)).get_centre_point())
 	camera.zoom = Vector2(default_zoom_level, default_zoom_level)
 
-func _set_up_critter(critter: Critter):
-	teams[critter.get_type()].add_critter(critter)
-	grid.set_hex_terrain(critter.get_location(), 0)
-
 func _process(delta):
 	var movement_vector: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	camera.move_local_x(movement_vector.x * camera_movement_mult * delta * camera.zoom.x)
 	camera.move_local_y(movement_vector.y * camera_movement_mult * delta * camera.zoom.y)
 	
 	if Input.is_action_just_pressed("left_click"):
-		var critter = find_critter_in_tile(grid.get_hex_at_mouse(), current_team)
-		if critter != null:
+		print(last_mouse_hex)
+		var critter = grid.get_hex_at_mouse().get_critter()
+		if critter != null and critter.get_team() == current_team:
 			current_team.set_current_critter(critter)
 			last_mouse_hex = null
 			path.clear_path()
-		_move_critter_to_mouse(current_team.get_current_critter())
+		else:
+			_move_critter_to_mouse(current_team.get_current_critter())
 
 	if Input.is_action_just_pressed("right_click"):
 		_turn_critter(current_team.get_current_critter())
@@ -79,20 +77,22 @@ func _process(delta):
 
 func _move_critter_to_mouse(critter: Critter):
 	var mouse_hex = grid.get_hex_at_mouse()
-	if mouse_hex != null and find_critter_in_tile(mouse_hex, teams[Critter.FERRET]) == null and find_critter_in_tile(mouse_hex, teams[Critter.HEDGEHOG]) == null:
+	if mouse_hex != null and mouse_hex.get_critter() == null:
 		var path_start = critter.get_location()
 		var path_end = mouse_hex
 		if mouse_hex != last_mouse_hex:
 			path.set_path(PathFinder.find_path_between(path_start, path_end, map, critter), critter)
-		elif path.get_path_length() != 0:
-			var movement_cost_so_far = 0
-			for entry in path.get_path():
-				if !entry[0] == path_start:
-					critter.move(entry[0], entry[1], entry[2] - movement_cost_so_far)
-					movement_cost_so_far += (entry[2] - movement_cost_so_far)
-					find_team_visibility(critter.get_team())
+			last_mouse_hex = mouse_hex
+		else:
+			if path.get_path_length() != 0:
+				var movement_cost_so_far = 0
+				for entry in path.get_path():
+					if !entry[0] == path_start:
+						critter.move(entry[0], entry[1], entry[2] - movement_cost_so_far)
+						movement_cost_so_far += (entry[2] - movement_cost_so_far)
+						find_team_visibility(critter.get_team())
+			last_mouse_hex = null
 			path.clear_path()
-		last_mouse_hex = mouse_hex
 
 func _turn_critter(critter: Critter):
 	if grid.get_hex_at_mouse() != null:

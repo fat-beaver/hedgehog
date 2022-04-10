@@ -6,7 +6,7 @@ var passable: bool setget , is_passable
 var transparent: bool setget , is_transparent
 var terrain_type : int setget set_terrain_type, get_terrain_type
 var critter setget set_critter, get_critter
-enum terrain_types {GRASS, WATER, SAND, POLE}
+enum {GRASS, WATER, SAND, POLE}
 
 #constants for hex size, cannot get these from tilemap because the size used for scaling is not the actual size
 const hex_width = 192
@@ -30,13 +30,13 @@ func set_terrain_type(new_terrain_type: int):
 	passable = true
 	transparent = true
 	match terrain_type:
-		terrain_types.GRASS:
+		GRASS:
 			pass
-		terrain_types.WATER:
+		WATER:
 			passable = false
-		terrain_types.SAND:
+		SAND:
 			pass
-		terrain_types.POLE:
+		POLE:
 			passable = false
 			transparent = false
 

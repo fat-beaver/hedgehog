@@ -31,11 +31,11 @@ func _generate_map():
 					var hex_terrain_raw = rand_range(0,10)
 
 					if hex_terrain_raw >= 0 and hex_terrain_raw < 6:
-						hex.set_terrain_type(Hex.terrain_types.GRASS)
+						hex.set_terrain_type(Hex.GRASS)
 					elif hex_terrain_raw >= 6 and hex_terrain_raw < 9:
-						hex.set_terrain_type(Hex.terrain_types.POLE)
+						hex.set_terrain_type(Hex.POLE)
 					else:
-						hex.set_terrain_type(Hex.terrain_types.WATER)
+						hex.set_terrain_type(Hex.WATER)
 
 					_hexes[hex.get_coords()] = hex
 					_hexes_array.append(hex)

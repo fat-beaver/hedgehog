@@ -24,7 +24,6 @@ func _set_up_tilemap(tile_map: TileMap):
 	tile_map.cell_size = graphical_hex_size
 	tile_map.cell_half_offset = 0
 	tile_map.cell_y_sort = true
-	
 
 func _draw_map(team: Team):
 	_tile_map.clear()
@@ -34,12 +33,6 @@ func _draw_map(team: Team):
 			_explored_tile_map.set_cell(hex.get_offset_coords().x, hex.get_offset_coords().y, hex.get_terrain_type())
 	for hex in team.get_visible_tiles():
 		_tile_map.set_cell(hex.get_offset_coords().x, hex.get_offset_coords().y, hex.get_terrain_type())
-
-func set_hex_terrain(hex: Hex, terrain_type: int):
-	if hex == null:
-		return
-	hex.set_terrain_type(terrain_type)
-	_tile_map.set_cell(hex.get_offset_coords().x, hex.get_offset_coords().y, terrain_type)
 
 func get_hex_at_mouse() -> Hex:
 	var adjusted_mouse_point = get_global_mouse_position() + _mouse_offset_vector
