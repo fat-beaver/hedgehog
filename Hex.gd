@@ -5,7 +5,7 @@ var coords: Vector2
 var passable: bool setget , is_passable
 var transparent: bool setget , is_transparent
 var terrain_type : int setget set_terrain_type, get_terrain_type
-
+var critter setget set_critter, get_critter
 enum terrain_types {GRASS, WATER, SAND, POLE}
 
 #constants for hex size, cannot get these from tilemap because the size used for scaling is not the actual size
@@ -52,7 +52,10 @@ func get_movement_cost():
 	return movement_cost
 
 func is_passable():
-	return passable
+	if critter == null:
+		return passable
+	else:
+		return false
 
 func is_transparent():
 	return transparent
@@ -62,3 +65,9 @@ func get_centre_point() -> Vector2:
 	point.x = 192 * coords.x + 96 * coords.y + hex_width / 2.0
 	point.y = 0 * coords.x + 94 * coords.y  + hex_height / 2.0
 	return point
+
+func set_critter(new_critter):
+	critter = new_critter
+
+func get_critter():
+	return critter

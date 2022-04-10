@@ -28,11 +28,11 @@ func _generate_map():
 					var hex = Hex.new(Vector2(q,r), 0)
 					#set the terrain of the hex to its distance from the centre, as a demonstration
 					#hex.set_terrain_type(find_hex_distance(tempCentreHex, hex) / 2 %4)
-					var hex_terrain_raw = rand_range(0,12)
+					var hex_terrain_raw = rand_range(0,10)
 
 					if hex_terrain_raw >= 0 and hex_terrain_raw < 6:
 						hex.set_terrain_type(Hex.terrain_types.GRASS)
-					elif hex_terrain_raw >= 6 and hex_terrain_raw < 11:
+					elif hex_terrain_raw >= 6 and hex_terrain_raw < 9:
 						hex.set_terrain_type(Hex.terrain_types.POLE)
 					else:
 						hex.set_terrain_type(Hex.terrain_types.WATER)

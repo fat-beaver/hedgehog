@@ -9,7 +9,8 @@ const zoom_increment = 0.25
 const default_zoom_level = 2
 const camera_movement_mult = 1200
 #critter constants
-const ferret_coords = Vector2(-4, 0)
+const ferret_one_coords = Vector2(-4, 0)
+const ferret_two_coords = Vector2(-6, 0)
 const hedgehog_coords = Vector2(4, 0)
 const default_time_units = 80
 #map constants
@@ -20,24 +21,24 @@ var path = HexPath.new()
 var camera = Camera2D.new()
 var map = Map.new(map_size)
 var grid = HexGrid.new(map)
-var ferret: Critter
-var hedgehog: Critter
-var current_critter: Critter
+
+var teams = {}
+var current_team: Team
 
 func _ready():
+	teams[Critter.FERRET] = Team.new()
+	teams[Critter.HEDGEHOG] = Team.new()
+	current_team = teams[Critter.FERRET]
 	#add all of the children
 	add_child(grid)
 	add_child(path)
+	add_child(teams[Critter.FERRET])
+	add_child(teams[Critter.HEDGEHOG])
 	_set_up_camera()
-	ferret = Critter.new(Critter.FERRET, map.get_hex_at_coords(ferret_coords), default_unit_direction, default_time_units)
-	_set_up_critter(ferret)
-	hedgehog = Critter.new(Critter.HEDGEHOG, map.get_hex_at_coords(hedgehog_coords), default_unit_direction, default_time_units)
-	_set_up_critter(hedgehog)
-	current_critter = ferret
-	grid.clear_tiles_to_draw()
-	grid.add_tiles_to_draw(find_visible_tiles(ferret))
-	grid.add_tiles_to_draw(find_visible_tiles(hedgehog))
-	grid._draw_map()
+	_set_up_critter(Critter.new(Critter.FERRET, map.get_hex_at_coords(ferret_one_coords), default_unit_direction, default_time_units, teams[Critter.FERRET]))
+	_set_up_critter(Critter.new(Critter.FERRET, map.get_hex_at_coords(ferret_two_coords), default_unit_direction, default_time_units, teams[Critter.FERRET]))
+	_set_up_critter(Critter.new(Critter.HEDGEHOG, map.get_hex_at_coords(hedgehog_coords), default_unit_direction, default_time_units, teams[Critter.HEDGEHOG]))
+	find_team_visibility(current_team)
 
 func _set_up_camera():
 	add_child(camera)
@@ -48,7 +49,7 @@ func _set_up_camera():
 	camera.zoom = Vector2(default_zoom_level, default_zoom_level)
 
 func _set_up_critter(critter: Critter):
-	add_child(critter)
+	teams[critter.get_type()].add_critter(critter)
 	grid.set_hex_terrain(critter.get_location(), 0)
 
 func _process(delta):
@@ -57,10 +58,15 @@ func _process(delta):
 	camera.move_local_y(movement_vector.y * camera_movement_mult * delta * camera.zoom.y)
 	
 	if Input.is_action_just_pressed("left_click"):
-		_move_critter_to_mouse(current_critter)
+		var critter = find_critter_in_tile(grid.get_hex_at_mouse(), current_team)
+		if critter != null:
+			current_team.set_current_critter(critter)
+			last_mouse_hex = null
+			path.clear_path()
+		_move_critter_to_mouse(current_team.get_current_critter())
 
 	if Input.is_action_just_pressed("right_click"):
-		_turn_critter(current_critter)
+		_turn_critter(current_team.get_current_critter())
 
 	if Input.is_action_just_released("zoom_out"):
 		zoom(zoom_increment)
@@ -68,29 +74,25 @@ func _process(delta):
 	if Input.is_action_just_released("zoom_in"):
 		zoom(-zoom_increment)
 
-	if Input.is_action_just_pressed("change_critter"):
-		if current_critter == ferret:
-			current_critter = hedgehog
-		else:
-			current_critter = ferret
 	if Input.is_action_just_pressed("end_turn"):
 		_end_turn()
 
 func _move_critter_to_mouse(critter: Critter):
 	var mouse_hex = grid.get_hex_at_mouse()
-	if mouse_hex != null:
+	if mouse_hex != null and find_critter_in_tile(mouse_hex, teams[Critter.FERRET]) == null and find_critter_in_tile(mouse_hex, teams[Critter.HEDGEHOG]) == null:
 		var path_start = critter.get_location()
 		var path_end = mouse_hex
 		if mouse_hex != last_mouse_hex:
-			path.set_path(PathFinder.find_path_between(path_start, path_end, map, critter.get_direction()))
+			path.set_path(PathFinder.find_path_between(path_start, path_end, map, critter), critter)
 		elif path.get_path_length() != 0:
-			critter.move(path.get_end()[0], path.get_end()[1], path.get_end()[2])
+			var movement_cost_so_far = 0
+			for entry in path.get_path():
+				if !entry[0] == path_start:
+					critter.move(entry[0], entry[1], entry[2] - movement_cost_so_far)
+					movement_cost_so_far += (entry[2] - movement_cost_so_far)
+					find_team_visibility(critter.get_team())
 			path.clear_path()
 		last_mouse_hex = mouse_hex
-		grid.clear_tiles_to_draw()
-		grid.add_tiles_to_draw(find_visible_tiles(ferret))
-		grid.add_tiles_to_draw(find_visible_tiles(hedgehog))
-		grid._draw_map()
 
 func _turn_critter(critter: Critter):
 	if grid.get_hex_at_mouse() != null:
@@ -98,10 +100,7 @@ func _turn_critter(critter: Critter):
 		if map.directions.has(direction):
 			var turning_cost = map.get_turning_costs(critter.get_direction(), direction)
 			critter.set_direction(direction, turning_cost)
-			grid.clear_tiles_to_draw()
-			grid.add_tiles_to_draw(find_visible_tiles(ferret))
-			grid.add_tiles_to_draw(find_visible_tiles(hedgehog))
-			grid._draw_map()
+			find_team_visibility(critter.get_team())
 
 func zoom(zoom: float):
 	if zoom > 0:
@@ -120,9 +119,32 @@ func zoom(zoom: float):
 			camera.zoom.y += zoom
 
 func _end_turn():
-	ferret.refresh_time_units()
-	hedgehog.refresh_time_units()
+	current_team.new_turn()
+	if current_team == teams[Critter.FERRET]:
+		current_team = teams[Critter.HEDGEHOG]
+	else:
+		current_team = teams[Critter.FERRET]
+	find_team_visibility(current_team)
 	last_mouse_hex = null
+
+func find_critter_visibility(team: Team):
+	for critter in teams[Critter.FERRET].get_critters():
+		critter.set_visible(false)
+	for critter in teams[Critter.HEDGEHOG].get_critters():
+		critter.set_visible(false)
+	for hex in team.get_visible_tiles():
+		var critter = hex.get_critter()
+		if critter != null:
+			critter.set_visible(true)
+
+func find_team_visibility(team: Team):
+	team.clear_visible_tiles()
+	for critter in team.get_critters():
+		var critter_visible_tiles = find_visible_tiles(critter)
+		for hex in critter_visible_tiles:
+			team.add_visible_tile(hex)
+	find_critter_visibility(team)
+	grid._draw_map(team)
 
 func find_visible_tiles(critter: Critter) -> Array:
 	var visible_tiles = Array()
@@ -143,3 +165,9 @@ func find_visible_tiles(critter: Critter) -> Array:
 					if !hex_to_check.is_transparent():
 						break
 	return visible_tiles
+
+func find_critter_in_tile(hex: Hex, team: Team):
+	for critter in team.get_critters():
+		if critter.get_location() == hex:
+			return critter
+	return null

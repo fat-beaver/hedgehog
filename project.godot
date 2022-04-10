@@ -48,6 +48,11 @@ _global_script_classes=[ {
 "class": "PathFinder",
 "language": "GDScript",
 "path": "res://PathFinder.gd"
+}, {
+"base": "Node2D",
+"class": "Team",
+"language": "GDScript",
+"path": "res://Team.gd"
 } ]
 _global_script_class_icons={
 "Battle": "",
@@ -57,7 +62,8 @@ _global_script_class_icons={
 "HexGrid": "",
 "HexPath": "",
 "Map": "",
-"PathFinder": ""
+"PathFinder": "",
+"Team": ""
 }
 
 [application]
@@ -114,11 +120,6 @@ zoom_out={
 zoom_in={
 "deadzone": 0.5,
 "events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":4,"pressed":false,"doubleclick":false,"script":null)
- ]
-}
-change_critter={
-"deadzone": 0.5,
-"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":67,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
  ]
 }
 end_turn={

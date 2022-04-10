@@ -50,10 +50,11 @@ class PriorityQueue:
 	func get_size():
 		return queue.size()
 
-static func find_path_between(start: Hex, goal: Hex, map: Map, initial_direction: Vector2) -> Array:
+static func find_path_between(start: Hex, goal: Hex, map: Map, critter: Critter) -> Array:
 	#cannot find a path between cells that do not exist
-	if start == null or goal == null or !start.is_passable() or !goal.is_passable():
-		return Array()
+	if start == null or goal == null or !goal.is_passable():
+		return []
+	var initial_direction = critter.get_direction()
 	var frontier = PriorityQueue.new()
 	frontier.push(start, 0)
 	#create dictionaries to hold where the path came from to reach each cell and how much it cost
@@ -71,7 +72,7 @@ static func find_path_between(start: Hex, goal: Hex, map: Map, initial_direction
 			break
 		for direction in directions:
 			var neighbour = map.get_hex_at_coords(current_cell.get_coords() + direction)
-			if neighbour != null and neighbour.is_passable():
+			if neighbour != null and neighbour.is_passable() and critter.get_team().get_explored_tiles().has(neighbour):
 				var new_cost = cost_to[current_cell] + neighbour.get_movement_cost() + map.get_turning_costs(arriving_direction[current_cell], direction)
 				if !cost_to.has(neighbour) or new_cost < cost_to[neighbour]:
 					came_from[neighbour] = current_cell
@@ -80,7 +81,7 @@ static func find_path_between(start: Hex, goal: Hex, map: Map, initial_direction
 					var priority = new_cost + _pathing_heuristic_multiplier * map.find_hex_distance(neighbour, goal)
 					frontier.push(neighbour, priority)
 	#once a path has been found (or not found) turn it into an array of hexes
-	var path = null
+	var path = []
 	if came_from.has(goal):
 		path = []
 		var current_cell = goal

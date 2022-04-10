@@ -19,19 +19,24 @@ var sprite = Sprite.new()
 var _type
 var _location
 var _direction
+var _team
 
-func _init(new_critter_type: int, hex: Hex, direction: Vector2, speed):
+func _init(new_critter_type: int, hex: Hex, direction: Vector2, speed: int, team: Team):
 	_type = new_critter_type
 	max_time_units = speed
 	refresh_time_units()
 	load_textures()
 	move(hex, direction, 0)
+	_team = team
 	add_child(sprite)
 
 func move(hex: Hex, direction: Vector2, movement_cost: int):
 	if time_units >= movement_cost:
 		time_units -= movement_cost
+		if _location != null:
+			_location.set_critter(null)
 		_location = hex
+		hex.set_critter(self)
 		set_direction(direction, 0)
 		position = _location.get_centre_point()
 
@@ -66,3 +71,12 @@ func refresh_time_units():
 
 func get_view_range():
 	return _view_range
+
+func get_team():
+	return _team
+
+func get_type():
+	return _type
+
+func get_time_units():
+	return time_units
