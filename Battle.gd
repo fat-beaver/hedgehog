@@ -54,7 +54,6 @@ func _process(delta):
 	camera.move_local_y(movement_vector.y * camera_movement_mult * delta * camera.zoom.y)
 	
 	if Input.is_action_just_pressed("left_click"):
-		print(last_mouse_hex)
 		var critter = grid.get_hex_at_mouse().get_critter()
 		if critter != null and critter.get_team() == current_team:
 			current_team.set_current_critter(critter)
