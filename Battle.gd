@@ -146,19 +146,27 @@ func find_team_visibility(team: Team):
 	grid._draw_map(team)
 
 func find_visible_tiles(critter: Critter) -> Array:
-	var visible_tiles = Array()
+	var visible_tiles = []
 	visible_tiles.append(critter.get_location())
-	for hex in map.get_hexes_array():
-		if map.find_hex_distance(critter.get_location(), hex) == critter.get_view_range():
-			var distance: Vector2 = hex.get_centre_point() - critter.get_location().get_centre_point()
-			#check if the first hex to check is the hex the critter is facing
-			var first_point_check = (distance / critter.get_view_range()) + critter.get_location().get_centre_point() - Hex.centre_point_of_coords(Vector2(0, 0))
-			var first_hex_check = map.get_hex_at_point(first_point_check)
-			if critter.get_direction() == first_hex_check.get_coords() - critter.get_location().get_coords():
-				for i in range(critter.get_view_range()):
-					#need to adjust for the fact that hex axial(0,0) does not have the centre point point(0,0)
-					var point_to_check = (distance * (i + 1) / critter.get_view_range()) + critter.get_location().get_centre_point() - Hex.centre_point_of_coords(Vector2(0, 0))
-					var hex_to_check = map.get_hex_at_point(point_to_check)
+	var candidate_tiles = []
+	var view_range = critter.get_view_range()
+	#create an array of vectors to represent the coords of all of the tiles at the edge of the critter's vision
+	for i in range(0, view_range):
+		candidate_tiles.append(Vector2(i, -view_range))
+		candidate_tiles.append(Vector2(view_range, i - view_range))
+		candidate_tiles.append(Vector2(view_range - i, i))
+		candidate_tiles.append(Vector2(-i, view_range))
+		candidate_tiles.append(Vector2(-view_range, view_range - i))
+		candidate_tiles.append(Vector2(i - view_range, -i))
+	for coords in candidate_tiles:
+		var step = (Hex.centre_point_of_coords(coords) - Hex.centre_point_of_coords(Vector2(0, 0))) / view_range
+		#check if the first hex to check is the hex the critter is facing, if it is not, skip
+		var first_point_check = Map.hex_coords_of_point(step)
+		if first_point_check == critter.get_direction():
+			#start at 1 because there is no point in checking the tile the critter is in
+			for i in range(1, view_range + 1):
+				var hex_to_check = map.get_hex_at_point((step * i) + critter.get_location().get_centre_point() - Hex.centre_point_of_coords(Vector2(0, 0)))
+				if hex_to_check != null:
 					if !visible_tiles.has(hex_to_check):
 						visible_tiles.append(hex_to_check)
 					if !hex_to_check.is_transparent():
