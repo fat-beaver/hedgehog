@@ -61,9 +61,12 @@ func is_transparent():
 	return transparent
 
 func get_centre_point() -> Vector2:
+	return centre_point_of_coords(coords)
+
+static func centre_point_of_coords(hex_coords: Vector2) -> Vector2:
 	var point: Vector2 = Vector2()
-	point.x = 192 * coords.x + 96 * coords.y + hex_width / 2.0
-	point.y = 0 * coords.x + 94 * coords.y  + hex_height / 2.0
+	point.x = 192 * hex_coords.x + 96 * hex_coords.y + hex_width / 2.0
+	point.y = 0 * hex_coords.x + 94 * hex_coords.y  + hex_height / 2.0
 	return point
 
 func set_critter(new_critter):

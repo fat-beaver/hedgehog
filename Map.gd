@@ -59,11 +59,11 @@ func get_hex_at_coords(coords: Vector2) -> Hex:
 		return _hexes[coords]
 	return null
 
-func find_hex_distance(a: Hex, b: Hex) -> int:
+static func find_hex_distance(a: Hex, b: Hex) -> int:
 	var coord_difference = a.get_coords() - b.get_coords()
 	return ((abs(coord_difference.x) + abs(coord_difference.x + coord_difference.y) + abs(coord_difference.y)) / 2) as int
 
-func _hex_coords_of_point(point: Vector2) -> Vector2:
+static func hex_coords_of_point(point: Vector2) -> Vector2:
 	var coords: Vector2 = Vector2()
 	#a slight multiplier to improve detection when far from the origin
 	point.y *= 0.978
@@ -71,7 +71,7 @@ func _hex_coords_of_point(point: Vector2) -> Vector2:
 	coords.y = 0 * point.x + 1.0 / 92.0 * point.y
 	return round_hex_coords(coords)
 
-func round_hex_coords(coords: Vector2) -> Vector2:
+static func round_hex_coords(coords: Vector2) -> Vector2:
 	#round each coord and extract s
 	var q = round(coords.x)
 	var r = round(coords.y)
@@ -90,7 +90,7 @@ func round_hex_coords(coords: Vector2) -> Vector2:
 	return Vector2(q, r)
 
 func get_hex_at_point(point: Vector2):
-	return get_hex_at_coords(_hex_coords_of_point(point))
+	return get_hex_at_coords(hex_coords_of_point(point))
 
 func get_turning_costs(initial_direction: Vector2, end_direction: Vector2):
 	if directions_costs.has(initial_direction) and directions_costs[initial_direction].has(end_direction):

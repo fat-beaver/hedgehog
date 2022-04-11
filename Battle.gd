@@ -34,19 +34,18 @@ func _ready():
 	add_child(path)
 	add_child(teams[Critter.FERRET])
 	add_child(teams[Critter.HEDGEHOG])
-	_set_up_camera()
 	Critter.new(Critter.FERRET, map.get_hex_at_coords(ferret_one_coords), default_unit_direction, default_time_units, teams[Critter.FERRET])
 	Critter.new(Critter.FERRET, map.get_hex_at_coords(ferret_two_coords), default_unit_direction, default_time_units, teams[Critter.FERRET])
 	Critter.new(Critter.HEDGEHOG, map.get_hex_at_coords(hedgehog_coords), default_unit_direction, default_time_units, teams[Critter.HEDGEHOG])
 	find_team_visibility(current_team)
+	_set_up_camera()
 
 func _set_up_camera():
 	add_child(camera)
 	#set the camera as the current one so it is actually used
 	camera.current = true
-	#centre the camera on hex (0,0)
-	camera.set_global_position(map.get_hex_at_coords(Vector2(0, 0)).get_centre_point())
 	camera.zoom = Vector2(default_zoom_level, default_zoom_level)
+	camera.set_global_position(current_team.get_current_critter().get_location().get_centre_point())
 
 func _process(delta):
 	var movement_vector: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -124,6 +123,7 @@ func _end_turn():
 	else:
 		current_team = teams[Critter.FERRET]
 	find_team_visibility(current_team)
+	camera.position = current_team.get_current_critter().get_location().get_centre_point()
 	last_mouse_hex = null
 
 func find_critter_visibility(team: Team):
@@ -152,12 +152,12 @@ func find_visible_tiles(critter: Critter) -> Array:
 		if map.find_hex_distance(critter.get_location(), hex) == critter.get_view_range():
 			var distance: Vector2 = hex.get_centre_point() - critter.get_location().get_centre_point()
 			#check if the first hex to check is the hex the critter is facing
-			var first_point_check = (distance / critter.get_view_range()) + critter.get_location().get_centre_point() - map.get_hex_at_coords(Vector2(0, 0)).get_centre_point()
+			var first_point_check = (distance / critter.get_view_range()) + critter.get_location().get_centre_point() - Hex.centre_point_of_coords(Vector2(0, 0))
 			var first_hex_check = map.get_hex_at_point(first_point_check)
 			if critter.get_direction() == first_hex_check.get_coords() - critter.get_location().get_coords():
 				for i in range(critter.get_view_range()):
 					#need to adjust for the fact that hex axial(0,0) does not have the centre point point(0,0)
-					var point_to_check = (distance * (i + 1) / critter.get_view_range()) + critter.get_location().get_centre_point() - map.get_hex_at_coords(Vector2(0, 0)).get_centre_point()
+					var point_to_check = (distance * (i + 1) / critter.get_view_range()) + critter.get_location().get_centre_point() - Hex.centre_point_of_coords(Vector2(0, 0))
 					var hex_to_check = map.get_hex_at_point(point_to_check)
 					if !visible_tiles.has(hex_to_check):
 						visible_tiles.append(hex_to_check)
